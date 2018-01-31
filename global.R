@@ -9,17 +9,9 @@ library(ggmap)
 nyct2010<-read.csv('nyct2010.csv')
 data<-read.csv('data2.csv')
 data2<-read.csv('data2.csv')
-data$DATE<-strftime( as.Date(data$DATE,'%m/%d/%y'),"%Y-%m-%d")
-raw_data<-data %>% group_by(BoroCT2010)
-raw_data<-data %>% group_by(BoroCT2010) %>%
-  summarize(n=n(),latitude=mean(LATITUDE),longitude=mean(LONGITUDE))
-rain_data<-data %>% filter(rain_1>=1) %>% group_by(BoroCT2010) %>%
-  summarize(n=n(),latitude=mean(LATITUDE),longitude=mean(LONGITUDE))
-snow_data<-data %>% filter(snow_1>=1) %>% group_by(BoroCT2010) %>%
-  summarize(n=n(),latitude=mean(LATITUDE),longitude=mean(LONGITUDE)) %>%
-  mutate(num=n/sum(n))
-weather_data<-data %>% group_by(BoroCT2010) %>% 
-  summarise(snow=sum(snow_1,na.rm = TRUE),n=n(),
-            latitude=mean(LATITUDE),longitude=mean(LONGITUDE))
+weatherdata<-read.csv('weather.csv')
+weatherlist = list('all','sunny/cloudy'='sunny','rain','snow')
+factorlist=list('all','Distraction'='Driver Inattention/Distraction','Other Vehicular'='Other Vehicular','Failure to Yield Right-of-Way','Turning Improperly','Tired'='Fatigued/Drowsy','Backing Unsafely','Lost Consciousness','Following Too Closely','Unsafe Lane Changing','Passing or Lane Usage Improper','Driver Inexperience','Alcohol'='Alcohol Involvement')
+typelist=list('PASSENGER VEHICLE','SUV'='SPORT UTILITY / STATION WAGON','TAXI','TRACK'='PICK-UP TRUCK','VAN','LIVERY VEHICLE','SMALL COM'='SMALL COM VEH(4 TIRES)','BUS','BICYCLE','MOTORCYCLE')
 
 

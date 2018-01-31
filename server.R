@@ -13,7 +13,21 @@ library(dygraphs)
 #library(googleVis)
 #source('help.R')
 function(input, output,session){
-
+  style <-theme(
+    plot.background = element_rect(
+      fill = '#282B30', colour = '#282B30'),
+    panel.background = element_rect(
+      fill = "#282B30", colour = '#686868'),
+    panel.grid.major = element_line(colour = '#686868'),
+    panel.grid.minor = element_line(colour = '#686868'),
+    axis.title = element_text(color = '#989898', size = 15), 
+    axis.text = element_text(color = '#989898', size = 10),
+    plot.title = element_text(
+      color = '#989898', size = 18,hjust = 0.5), 
+    legend.background = element_rect(
+      fill = '#282B30', colour = '#282B30'),
+    legend.text = element_text(color = '#989898', size = 10),
+    legend.title = element_text(color = "#989898",size = 12) )
   # mapdata<-reactive({
   #   data %>%
   #     filter((input$weather!='all' & weather==input$weather) | input$weather=='all') %>%
@@ -71,13 +85,25 @@ function(input, output,session){
             (input$factor=='follow too closely'&(CONTRIBUTING_FACTOR_1=='Following Too Closely'|CONTRIBUTING_FACTOR_1=='Following Too Closely'))
         )%>%
         group_by(BoroCT2010)%>%
-        summarize(nn=n(),latitude=mean(LATITUDE),longitude=mean(LONGITUDE))%>%
-        mutate(num=nn/mean(nn))
+        summarize(nn=n(),vmtradius=sum(vmt),latitude=mean(LATITUDE),longitude=mean(LONGITUDE))%>%
+        mutate(num=nn/mean(nn),vmtr=vmtradius/mean(vmtradius))
     ) %>% setView(lng = -73.99, lat = 40.75, zoom = 12) %>%
       addProviderTiles("CartoDB.Positron") %>%
+      
       addCircles(lng = ~longitude, lat = ~latitude, weight = 0,
-                 radius = ~num*100,color='red'
+                 radius = ~num*100,color='red',group = 'Normalized by number*'
+      )%>%
+      addCircles(lng = ~longitude, lat = ~latitude, weight = 0,
+                 radius = ~vmtr*100,color='red',group = 'Normalized by VMT**'
+      )%>%
+      addCircles(lng = ~longitude, lat = ~latitude, weight = 0,
+                 radius = ~nn*2,color='red',group = 'Original data'
+      )%>%
+      addLayersControl(
+        baseGroups = c('Normalized by number*','Normalized by VMT**','Original data'),
+        options = layersControlOptions(collapsed = FALSE)
       )
+      
   })
   output$heatmap<-renderLeaflet({
     leaflet(
@@ -101,12 +127,13 @@ function(input, output,session){
             (input$factor2=='tired'&(CONTRIBUTING_FACTOR_1=='Fatigued/Drowsy'|CONTRIBUTING_FACTOR_2=='Fatigued/Drowsy'))|
             (input$factor2=='inattention'&(CONTRIBUTING_FACTOR_1=='Driver Inattention/Distraction'|CONTRIBUTING_FACTOR_2=='Driver Inattention/Distraction'))|
             (input$factor2=='follow too closely'&(CONTRIBUTING_FACTOR_1=='Following Too Closely'|CONTRIBUTING_FACTOR_1=='Following Too Closely'))
-        )
+        )%>%
+        mutate(light=sqrt(sqrt((15205/length(DATE)))))
         
     ) %>% setView(lng = -73.99, lat = 40.75, zoom = 12) %>%
       addProviderTiles("CartoDB.DarkMatter") %>%
       removeWebGLHeatmap(layerId = 'a') %>%
-      addWebGLHeatmap(layerId='a',lng=~LONGITUDE,lat=~LATITUDE,size=190)
+      addWebGLHeatmap(layerId='a',lng=~LONGITUDE,lat=~LATITUDE,size=~mean(light)*190)
   })
   
   output$plot1<- renderDygraph({
@@ -137,5 +164,61 @@ function(input, output,session){
     )%>%
       dySeries('n',label='number of crashes')
   })
+###weather###
+graph1<-reactive({
+  validate(
+    need(input$weathercheckbox != "", "Please select at least one factor")
+  )
+  if (input$weathercheckbox=='all'){
+    weatherdata}
+  else{
+    weatherdata %>% filter(weather %in% input$weathercheckbox) 
+  }
+  })
+
+output$graph1<-renderPlot({
+  ggplot(graph1(), aes(x=HOUR,color=weather, fill=weather))+
+    
+    geom_area(alpha=0.55,stat='bindot')+
+    style+
+    labs(x = "Hours", y = "Crash Count",
+         title = "Area Map of Crash Count by Weather")
+})
+###factor###
+graph2<-reactive({
+  validate(
+    need(input$factorcheckbox != "", "Please select at least one factor")
+  )
+  if (input$factorcheckbox=='all'){
+    data}
+  else{
+    data %>% filter(CONTRIBUTING_FACTOR_1 %in% input$factorcheckbox) 
+  }
+})
+output$graph2<-renderPlot({
+  ggplot(graph2(), aes(x=HOUR,color=CONTRIBUTING_FACTOR_1, fill=CONTRIBUTING_FACTOR_1))+ 
+    geom_area(alpha=0.55,stat='bindot')+
+    guides(fill=guide_legend(title = 'crash causes'),color=guide_legend(title = 'crash causes'))+
+    style+
+    labs(x = "Hours", y = "Crash Count",
+         title = "Area Map of Crash Count by Crash Causes")
+})
+###type###
+graph3<-reactive({
+  validate(
+    need(input$typecheckbox != "", "Please select at least one factor")
+  )
+
+    data %>% filter(VEHICLE_TYPE_CODE_1 %in% input$typecheckbox) 
+
+})
+output$graph3<-renderPlot({
+  ggplot(graph3(), aes(x=HOUR,color=VEHICLE_TYPE_CODE_1, fill=VEHICLE_TYPE_CODE_1))+ 
+    geom_area(alpha=0.55,stat='bindot')+
+    guides(fill=guide_legend(title = 'vehicle type'),color=guide_legend(title = 'vehicle type'))+
+    style+
+    labs(x = "Hours", y = "Crash Count",
+         title = "Area Map of Crash Count by Vehicle Type")
+})
 
 }
