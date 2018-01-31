@@ -91,17 +91,17 @@ function(input, output,session){
       addProviderTiles("CartoDB.Positron") %>%
       
       addCircles(lng = ~longitude, lat = ~latitude, weight = 0,
-                 radius = ~num*100,color='red',group = 'Normalized by number*'
+                 radius = ~num*100,color='red',group = 'Normalized by number'
       )%>%
       addCircles(lng = ~longitude, lat = ~latitude, weight = 0,
-                 radius = ~vmtr*100,color='red',group = 'Normalized by VMT**'
+                 radius = ~vmtr*100,color='red',group = 'Normalized by VMT*'
       )%>%
       addCircles(lng = ~longitude, lat = ~latitude, weight = 0,
                  radius = ~nn*2,color='red',group = 'Original data'
       )%>%
       addLayersControl(
-        baseGroups = c('Normalized by number*','Normalized by VMT**','Original data'),
-        options = layersControlOptions(collapsed = FALSE)
+        baseGroups = c('Normalized by number','Normalized by VMT*','Original data'),
+        options = layersControlOptions(collapsed = TRUE)
       )
       
   })

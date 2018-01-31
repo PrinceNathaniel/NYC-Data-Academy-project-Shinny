@@ -3,7 +3,7 @@ library(shiny)
 library(shinydashboard)
 library(shinythemes)
 library(dygraphs)
-navbarPage(title='Manhatton Traffic Collision Insight',
+navbarPage(title='Manhattan Traffic Collision Insight',collapsible=TRUE,
            id='nav',
            theme=shinytheme('slate'),
       ###map###
@@ -11,6 +11,7 @@ navbarPage(title='Manhatton Traffic Collision Insight',
                     div(class='outer',
                         tags$head(includeCSS('styles.css')),
           leafletOutput(outputId = 'map1',width = '100%',height = '100%'),
+          
           
           absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE, draggable = TRUE, 
                         top = 80, left = 20, right = 'auto', bottom = "auto",
@@ -26,18 +27,14 @@ navbarPage(title='Manhatton Traffic Collision Insight',
                                        "Cause of the crash",
                                        c('all','inattention','follow too closely','tired','alcolho'))
                         ),
-          absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE, draggable = TRUE, 
+          absolutePanel(id = "controls", class = "panel panel-default", fixed = FALSE, draggable = TRUE, 
                         top = 'auto', left = 'auto', right = '10', bottom = "20",
-                        width = 320, height = "400",
+                        width = 320, height = 120,
                         
-                        h5('In my project, Manhattan is divied by 281 districts. The radius of each circle represents the number(or strength)
-                        in corresponding area.'),
-                        br(),
-                        h6('* For some option combinations, the total number of crashes is small. "Normalized by number" means 
-                           the radius represent the relative number of a certain combination of options.'),
                         
-                        h6('** VMT(Vehicle Miles Traveled) is a index to represent traffic volume."Normalized by VMT" means the radius represent
-                           the relative number of crash per traffic volume. A bigger circle here represent the collision rate is high. For more details about VMT, please see the Reference page.')
+                        
+                        h6('* VMT(Vehicle Miles Traveled) is a index to represent traffic volume."Normalized by VMT" means the radius represent
+                           the relative number of crash per traffic volume. ')
                         )
           
                         )),
